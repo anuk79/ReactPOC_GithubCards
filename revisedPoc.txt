@@ -1,0 +1,79 @@
+import React from 'react';
+
+const Card = (props) => {
+  return (
+    <div className="col-xs-3" style={{ margin: '30px', textAlign: 'left' }}>
+      <img width="75" src={props.avatar_url} />
+      <div style={{ display: 'inline-block', marginLeft: 10 }}>
+        <div style={{ fontSize: '1.25em', fontWeight: 'bold' }}>{props.name}</div>
+        <div>{props.company}</div>
+      </div>
+    </div>
+  );
+};
+
+const CardList = (props) => {
+  return (
+    <div>
+      {props.cards.map(card => <Card {...card} />)}
+    </div>
+  );
+};
+
+class Form extends React.Component {
+  state = {
+    userName: ''
+  };
+
+  handleSubmit = (event) => {
+    event.preventDefault();
+    fetch(`https://api.github.com/users/${this.state.userName}`)
+      .then(response => {
+        response.json().then(data => {
+          this.props.onSubmit(data);
+          this.setState({ userName: '' });
+        });
+      })
+  };
+
+  render() {
+    return (
+      <form onSubmit={this.handleSubmit} className="form-inline">
+        <div className="form-group">
+          <input
+            className="form-control"
+            type="text"
+            placeholder="Github username"
+            value={this.state.userName}
+            onChange={(event) => this.setState({ userName: event.target.value })} required />
+          <button className="btn btn-default ml-20" type="submit">Add Card</button>
+        </div>
+      </form>
+    );
+  }
+}
+
+class App extends React.Component {
+  state = {
+    cards: []
+  }
+
+  addNewCard = (cardInfo) => {
+    this.setState((prevState) => ({
+      cards: prevState.cards.concat(cardInfo)
+    }));
+  }
+
+  render() {
+    return (
+      <div style={{ margin: '20px' }}>
+        <h3>Search github users</h3>
+        <hr />
+        <Form onSubmit={this.addNewCard} />
+        <CardList cards={this.state.cards} />
+      </div>
+    );
+  }
+}
+
+ReactDOM.render(<App />, mountNode);
